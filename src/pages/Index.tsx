@@ -4,8 +4,11 @@ const Index = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+        <h1 className="text-4xl font-bold mb-4 text-primary">🚀 Site is Loading Successfully!</h1>
+        <p className="text-xl text-muted-foreground">If you can see this, your site is working properly.</p>
+        <div className="mt-4 p-4 bg-green-100 text-green-800 rounded-lg">
+          ✅ Everything is working correctly!
+        </div>
       </div>
     </div>
   );
