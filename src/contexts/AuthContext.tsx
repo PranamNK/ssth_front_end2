@@ -3,18 +3,18 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface User {
   id: string;
-  name: string;
-  userId: string;
-  phone: string;
+  leadName: string;
   email: string;
-  organization: string;
-  role: string;
+  phone: string;
+  class: string;
+  schoolName: string;
+  schoolAddress: string;
   isTeamLeader: boolean;
 }
 
 interface AuthContextType {
   user: User | null;
-  login: (userId: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<boolean>;
   register: (userData: any) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
@@ -42,7 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  const login = async (userId: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
       // Simulate API call
@@ -50,7 +50,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Check stored users
       const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
-      const foundUser = storedUsers.find((u: any) => u.userId === userId && u.password === password);
+      const foundUser = storedUsers.find((u: any) => u.email === email && u.password === password);
       
       if (foundUser) {
         const { password: _, ...userWithoutPassword } = foundUser;

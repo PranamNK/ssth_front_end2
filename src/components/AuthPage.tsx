@@ -1,276 +1,349 @@
 
-import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { useLanguage } from '../contexts/LanguageContext';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useNavigate } from 'react-router-dom';
-import { useToast } from './ui/use-toast';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form";
+import { useAuth } from "../contexts/AuthContext";
+import { useLanguage } from "../contexts/LanguageContext";
+import { useToast } from "@/hooks/use-toast";
 
 const loginSchema = z.object({
-  userId: z.string().min(1, 'User ID is required'),
-  password: z.string().min(1, 'Password is required'),
+  email: z.string().email("Please enter a valid email"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 const registerSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  userId: z.string().min(3, 'User ID must be at least 3 characters'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  phone: z.string().min(10, 'Phone number must be at least 10 digits'),
-  email: z.string().email('Invalid email address'),
-  organization: z.string().min(1, 'Organization is required'),
-  role: z.string().min(1, 'Role is required'),
+  leadName: z.string().min(2, "Lead name must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email"),
+  phone: z.string().min(10, "Phone number must be at least 10 digits"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  class: z.string().min(1, "Class is required"),
+  schoolName: z.string().min(2, "School name is required"),
+  schoolAddress: z.string().min(2, "School address is required"),
 });
 
-const AuthPage: React.FC = () => {
+const AuthPage = () => {
+  const [activeTab, setActiveTab] = useState("login");
   const { login, register, isLoading } = useAuth();
-  const { t } = useLanguage();
-  const navigate = useNavigate();
+  const { language } = useLanguage();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('login');
 
-  const loginForm = useForm({
+  const loginForm = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      userId: '',
-      password: '',
+      email: "",
+      password: "",
     },
   });
 
-  const registerForm = useForm({
+  const registerForm = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      name: '',
-      userId: '',
-      password: '',
-      phone: '',
-      email: '',
-      organization: '',
-      role: '',
+      leadName: "",
+      email: "",
+      phone: "",
+      password: "",
+      class: "",
+      schoolName: "",
+      schoolAddress: "",
     },
   });
 
-  const onLogin = async (data: any) => {
-    const success = await login(data.userId, data.password);
+  const onLogin = async (values: z.infer<typeof loginSchema>) => {
+    const success = await login(values.email, values.password);
     if (success) {
       toast({
-        title: 'Login successful',
-        description: 'Welcome back!',
+        title: language === 'en' ? "Login successful" : "ಲಾಗಿನ್ ಯಶಸ್ವಿಯಾಗಿದೆ",
+        description: language === 'en' ? "Welcome back!" : "ಮತ್ತೆ ಸ್ವಾಗತ!",
       });
-      navigate('/dashboard');
     } else {
       toast({
-        title: 'Login failed',
-        description: 'Invalid credentials',
-        variant: 'destructive',
+        title: language === 'en' ? "Login failed" : "ಲಾಗಿನ್ ವಿಫಲವಾಗಿದೆ",
+        description: language === 'en' ? "Invalid email or password" : "ತಪ್ಪು ಇಮೇಲ್ ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್",
+        variant: "destructive",
       });
     }
   };
 
-  const onRegister = async (data: any) => {
-    const success = await register(data);
+  const onRegister = async (values: z.infer<typeof registerSchema>) => {
+    const success = await register(values);
     if (success) {
       toast({
-        title: 'Registration successful',
-        description: 'Welcome to the team!',
+        title: language === 'en' ? "Registration successful" : "ನೋಂದಣಿ ಯಶಸ್ವಿಯಾಗಿದೆ",
+        description: language === 'en' ? "Account created successfully!" : "ಖಾತೆ ಯಶಸ್ವಿಯಾಗಿ ರಚಿಸಲಾಗಿದೆ!",
       });
-      navigate('/dashboard');
     } else {
       toast({
-        title: 'Registration failed',
-        description: 'Please try again',
-        variant: 'destructive',
+        title: language === 'en' ? "Registration failed" : "ನೋಂದಣಿ ವಿಫಲವಾಗಿದೆ",
+        description: language === 'en' ? "Please try again" : "ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ",
+        variant: "destructive",
       });
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Team Management</CardTitle>
+          <CardTitle className="text-center">
+            {language === 'en' ? 'Team Registration Portal' : 'ತಂಡ ನೋಂದಣಿ ಪೋರ್ಟಲ್'}
+          </CardTitle>
           <CardDescription className="text-center">
-            Access your team dashboard
+            {language === 'en' ? 'Create your account or sign in' : 'ನಿಮ್ಮ ಖಾತೆ ರಚಿಸಿ ಅಥವಾ ಸೈನ್ ಇನ್ ಮಾಡಿ'}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="login">{t('login')}</TabsTrigger>
-              <TabsTrigger value="register">{t('register')}</TabsTrigger>
-              <TabsTrigger value="forgot-id">ID</TabsTrigger>
-              <TabsTrigger value="forgot-password">Pass</TabsTrigger>
+              <TabsTrigger value="login">
+                {language === 'en' ? 'Login' : 'ಲಾಗಿನ್'}
+              </TabsTrigger>
+              <TabsTrigger value="register">
+                {language === 'en' ? 'Register' : 'ನೋಂದಣಿ'}
+              </TabsTrigger>
+              <TabsTrigger value="forgot-id">
+                {language === 'en' ? 'Forgot ID' : 'ಐಡಿ ಮರೆತಿದ್ದೀರಾ'}
+              </TabsTrigger>
+              <TabsTrigger value="forgot-password">
+                {language === 'en' ? 'Reset Pass' : 'ಪಾಸ್ ರೀಸೆಟ್'}
+              </TabsTrigger>
             </TabsList>
-            
-            <TabsContent value="login">
-              <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="userId">{t('userId')}</Label>
-                  <Input
-                    id="userId"
-                    {...loginForm.register('userId')}
-                    placeholder="Enter your user ID"
+
+            <TabsContent value="login" className="space-y-4">
+              <Form {...loginForm}>
+                <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-4">
+                  <FormField
+                    control={loginForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {language === 'en' ? 'Email' : 'ಇಮೇಲ್'}
+                        </FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder={language === 'en' ? 'Enter your email' : 'ನಿಮ್ಮ ಇಮೇಲ್ ನಮೂದಿಸಿ'} 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  {loginForm.formState.errors.userId && (
-                    <p className="text-sm text-destructive">
-                      {loginForm.formState.errors.userId.message}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">{t('password')}</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    {...loginForm.register('password')}
-                    placeholder="Enter your password"
+                  <FormField
+                    control={loginForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {language === 'en' ? 'Password' : 'ಪಾಸ್‌ವರ್ಡ್'}
+                        </FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="password" 
+                            placeholder={language === 'en' ? 'Enter your password' : 'ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ'} 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  {loginForm.formState.errors.password && (
-                    <p className="text-sm text-destructive">
-                      {loginForm.formState.errors.password.message}
-                    </p>
-                  )}
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Logging in...' : t('login')}
-                </Button>
-              </form>
+                  <Button 
+                    type="submit" 
+                    className="w-full" 
+                    disabled={isLoading}
+                  >
+                    {isLoading 
+                      ? (language === 'en' ? 'Signing in...' : 'ಸೈನ್ ಇನ್ ಆಗುತ್ತಿದೆ...') 
+                      : (language === 'en' ? 'Sign In' : 'ಸೈನ್ ಇನ್')
+                    }
+                  </Button>
+                </form>
+              </Form>
             </TabsContent>
-            
-            <TabsContent value="register">
-              <form onSubmit={registerForm.handleSubmit(onRegister)} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">{t('name')}</Label>
-                  <Input
-                    id="name"
-                    {...registerForm.register('name')}
-                    placeholder="Enter your full name"
+
+            <TabsContent value="register" className="space-y-4">
+              <Form {...registerForm}>
+                <form onSubmit={registerForm.handleSubmit(onRegister)} className="space-y-4">
+                  <FormField
+                    control={registerForm.control}
+                    name="leadName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {language === 'en' ? 'Lead Name' : 'ಮುಖ್ಯಸ್ಥರ ಹೆಸರು'}
+                        </FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder={language === 'en' ? 'Enter lead name' : 'ಮುಖ್ಯಸ್ಥರ ಹೆಸರು ನಮೂದಿಸಿ'} 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  {registerForm.formState.errors.name && (
-                    <p className="text-sm text-destructive">
-                      {registerForm.formState.errors.name.message}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="reg-userId">{t('userId')}</Label>
-                  <Input
-                    id="reg-userId"
-                    {...registerForm.register('userId')}
-                    placeholder="Choose a user ID"
+                  <FormField
+                    control={registerForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {language === 'en' ? 'Email' : 'ಇಮೇಲ್'}
+                        </FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder={language === 'en' ? 'Enter your email' : 'ನಿಮ್ಮ ಇಮೇಲ್ ನಮೂದಿಸಿ'} 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  {registerForm.formState.errors.userId && (
-                    <p className="text-sm text-destructive">
-                      {registerForm.formState.errors.userId.message}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="reg-password">{t('password')}</Label>
-                  <Input
-                    id="reg-password"
-                    type="password"
-                    {...registerForm.register('password')}
-                    placeholder="Choose a password"
+                  <FormField
+                    control={registerForm.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {language === 'en' ? 'Phone Number' : 'ದೂರವಾಣಿ ಸಂಖ್ಯೆ'}
+                        </FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder={language === 'en' ? 'Enter phone number' : 'ದೂರವಾಣಿ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ'} 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  {registerForm.formState.errors.password && (
-                    <p className="text-sm text-destructive">
-                      {registerForm.formState.errors.password.message}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">{t('phone')}</Label>
-                  <Input
-                    id="phone"
-                    {...registerForm.register('phone')}
-                    placeholder="Enter your phone number"
+                  <FormField
+                    control={registerForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {language === 'en' ? 'Password' : 'ಪಾಸ್‌ವರ್ಡ್'}
+                        </FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="password" 
+                            placeholder={language === 'en' ? 'Create a password' : 'ಪಾಸ್‌ವರ್ಡ್ ರಚಿಸಿ'} 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  {registerForm.formState.errors.phone && (
-                    <p className="text-sm text-destructive">
-                      {registerForm.formState.errors.phone.message}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">{t('email')}</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    {...registerForm.register('email')}
-                    placeholder="Enter your email"
+                  <FormField
+                    control={registerForm.control}
+                    name="class"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {language === 'en' ? 'Class' : 'ವರ್ಗ'}
+                        </FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder={language === 'en' ? 'Enter class' : 'ವರ್ಗ ನಮೂದಿಸಿ'} 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  {registerForm.formState.errors.email && (
-                    <p className="text-sm text-destructive">
-                      {registerForm.formState.errors.email.message}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="organization">{t('organization')}</Label>
-                  <Input
-                    id="organization"
-                    {...registerForm.register('organization')}
-                    placeholder="Enter your organization"
+                  <FormField
+                    control={registerForm.control}
+                    name="schoolName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {language === 'en' ? 'School Name' : 'ಶಾಲೆಯ ಹೆಸರು'}
+                        </FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder={language === 'en' ? 'Enter school name' : 'ಶಾಲೆಯ ಹೆಸರು ನಮೂದಿಸಿ'} 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  {registerForm.formState.errors.organization && (
-                    <p className="text-sm text-destructive">
-                      {registerForm.formState.errors.organization.message}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="role">{t('role')}</Label>
-                  <Input
-                    id="role"
-                    {...registerForm.register('role')}
-                    placeholder="Enter your role"
+                  <FormField
+                    control={registerForm.control}
+                    name="schoolAddress"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {language === 'en' ? 'School Address (City)' : 'ಶಾಲೆಯ ವಿಳಾಸ (ನಗರ)'}
+                        </FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder={language === 'en' ? 'Enter city name' : 'ನಗರದ ಹೆಸರು ನಮೂದಿಸಿ'} 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                  {registerForm.formState.errors.role && (
-                    <p className="text-sm text-destructive">
-                      {registerForm.formState.errors.role.message}
-                    </p>
-                  )}
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Registering...' : t('register')}
-                </Button>
-              </form>
+                  <Button 
+                    type="submit" 
+                    className="w-full" 
+                    disabled={isLoading}
+                  >
+                    {isLoading 
+                      ? (language === 'en' ? 'Creating Account...' : 'ಖಾತೆ ರಚಿಸಲಾಗುತ್ತಿದೆ...') 
+                      : (language === 'en' ? 'Create Account' : 'ಖಾತೆ ರಚಿಸಿ')
+                    }
+                  </Button>
+                </form>
+              </Form>
             </TabsContent>
-            
-            <TabsContent value="forgot-id">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="forgot-email">{t('email')}</Label>
-                  <Input
-                    id="forgot-email"
-                    type="email"
-                    placeholder="Enter your email to recover User ID"
-                  />
-                </div>
-                <Button className="w-full">
-                  Recover User ID
+
+            <TabsContent value="forgot-id" className="space-y-4">
+              <div className="text-center py-4">
+                <p className="text-muted-foreground">
+                  {language === 'en' 
+                    ? 'Enter your phone number to recover your email' 
+                    : 'ನಿಮ್ಮ ಇಮೇಲ್ ಮರುಪಡೆಯಲು ನಿಮ್ಮ ದೂರವಾಣಿ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ'
+                  }
+                </p>
+                <Input 
+                  placeholder={language === 'en' ? 'Phone number' : 'ದೂರವಾಣಿ ಸಂಖ್ಯೆ'} 
+                  className="mt-4" 
+                />
+                <Button className="w-full mt-4">
+                  {language === 'en' ? 'Recover Email' : 'ಇಮೇಲ್ ಮರುಪಡೆಯಿರಿ'}
                 </Button>
               </div>
             </TabsContent>
-            
-            <TabsContent value="forgot-password">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="forgot-userId">{t('userId')}</Label>
-                  <Input
-                    id="forgot-userId"
-                    placeholder="Enter your User ID"
-                  />
-                </div>
-                <Button className="w-full">
-                  Reset Password
+
+            <TabsContent value="forgot-password" className="space-y-4">
+              <div className="text-center py-4">
+                <p className="text-muted-foreground">
+                  {language === 'en' 
+                    ? 'Enter your email to reset password' 
+                    : 'ಪಾಸ್‌ವರ್ಡ್ ರೀಸೆಟ್ ಮಾಡಲು ನಿಮ್ಮ ಇಮೇಲ್ ನಮೂದಿಸಿ'
+                  }
+                </p>
+                <Input 
+                  placeholder={language === 'en' ? 'Email address' : 'ಇಮೇಲ್ ವಿಳಾಸ'} 
+                  className="mt-4" 
+                />
+                <Button className="w-full mt-4">
+                  {language === 'en' ? 'Reset Password' : 'ಪಾಸ್‌ವರ್ಡ್ ರೀಸೆಟ್ ಮಾಡಿ'}
                 </Button>
               </div>
             </TabsContent>

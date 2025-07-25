@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Upload, Users, FileText, LogOut, Globe } from 'lucide-react';
-import DocumentUpload from './DocumentUpload';
+import ProjectDetails from './ProjectDetails';
 import TeammateManagement from './TeammateManagement';
 import { useNavigate } from 'react-router-dom';
 
@@ -32,7 +32,7 @@ const Dashboard: React.FC = () => {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <h1 className="text-2xl font-bold">{t('dashboard')}</h1>
-            <span className="text-muted-foreground">Welcome, {user.name}</span>
+            <span className="text-muted-foreground">Welcome, {user.leadName}</span>
           </div>
           <div className="flex items-center space-x-4">
             <Button
@@ -58,26 +58,10 @@ const Dashboard: React.FC = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="documents" className="flex items-center space-x-2">
-              <FileText className="h-4 w-4" />
-              <span>{t('documents')}</span>
-            </TabsTrigger>
-            <TabsTrigger value="teammates" className="flex items-center space-x-2">
-              <Users className="h-4 w-4" />
-              <span>{t('teammates')}</span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="documents" className="mt-6">
-            <DocumentUpload />
-          </TabsContent>
-
-          <TabsContent value="teammates" className="mt-6">
-            <TeammateManagement />
-          </TabsContent>
-        </Tabs>
+        <div className="space-y-6">
+          <TeammateManagement />
+          <ProjectDetails />
+        </div>
       </main>
     </div>
   );

@@ -19,7 +19,7 @@ interface Teammate {
   userId: string;
   phone: string;
   email: string;
-  organization: string;
+  class: string;
   role: string;
   addedDate: string;
 }
@@ -29,7 +29,7 @@ const teammateSchema = z.object({
   userId: z.string().min(3, 'User ID must be at least 3 characters'),
   phone: z.string().min(10, 'Phone number must be at least 10 digits'),
   email: z.string().email('Invalid email address'),
-  organization: z.string().min(1, 'Organization is required'),
+  class: z.string().min(1, 'Class is required'),
   role: z.string().min(1, 'Role is required'),
 });
 
@@ -48,7 +48,7 @@ const TeammateManagement: React.FC = () => {
       userId: '',
       phone: '',
       email: '',
-      organization: user?.organization || '',
+      class: user?.class || '',
       role: '',
     },
   });
@@ -62,9 +62,9 @@ const TeammateManagement: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Auto-fill organization from team leader
-    if (user?.organization) {
-      form.setValue('organization', user.organization);
+    // Auto-fill class from team leader
+    if (user?.class) {
+      form.setValue('class', user.class);
     }
   }, [user, form]);
 
@@ -108,7 +108,7 @@ const TeammateManagement: React.FC = () => {
       userId: '',
       phone: '',
       email: '',
-      organization: user?.organization || '',
+      class: user?.class || '',
       role: '',
     });
   };
@@ -132,7 +132,7 @@ const TeammateManagement: React.FC = () => {
       userId: teammate.userId,
       phone: teammate.phone,
       email: teammate.email,
-      organization: teammate.organization,
+      class: teammate.class,
       role: teammate.role,
     });
     setIsDialogOpen(true);
@@ -146,7 +146,7 @@ const TeammateManagement: React.FC = () => {
       userId: '',
       phone: '',
       email: '',
-      organization: user?.organization || '',
+      class: user?.class || '',
       role: '',
     });
   };
@@ -228,15 +228,15 @@ const TeammateManagement: React.FC = () => {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="organization">{t('organization')}</Label>
+                    <Label htmlFor="class">{t('class')}</Label>
                     <Input
-                      id="organization"
-                      {...form.register('organization')}
-                      placeholder="Enter organization"
+                      id="class"
+                      {...form.register('class')}
+                      placeholder="Enter class"
                     />
-                    {form.formState.errors.organization && (
+                    {form.formState.errors.class && (
                       <p className="text-sm text-destructive">
-                        {form.formState.errors.organization.message}
+                        {form.formState.errors.class.message}
                       </p>
                     )}
                   </div>
@@ -289,7 +289,7 @@ const TeammateManagement: React.FC = () => {
                     <div>
                       <p className="font-medium">{teammate.name}</p>
                       <p className="text-sm text-muted-foreground">
-                        {teammate.role} • {teammate.organization}
+                        {teammate.role} • Class {teammate.class}
                       </p>
                       <p className="text-sm text-muted-foreground">
                         {teammate.phone} • {teammate.email}
