@@ -26,6 +26,8 @@ interface AuthContextType {
   user: User | null;
   teams: Team[];
   signIn: (email: string, phone: string, password: string) => Promise<boolean>;
+  register: (email: string, phone: string, password: string, name: string) => Promise<boolean>;
+  forgotPassword: (email: string) => Promise<boolean>;
   logout: () => void;
   createTeam: (teamData: Omit<Team, 'id'>) => void;
   updateTeam: (id: string, teamData: Omit<Team, 'id'>) => void;
@@ -69,17 +71,68 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Mock authentication - in real app, this would be a proper API call
-      const newUser: User = {
+      // Check stored users
+      const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+      const foundUser = storedUsers.find((u: any) => u.email === email && u.password === password);
+      
+      if (foundUser) {
+        const { password: _, ...userWithoutPassword } = foundUser;
+        setUser(userWithoutPassword);
+        localStorage.setItem('user', JSON.stringify(userWithoutPassword));
+        return true;
+      }
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const register = async (email: string, phone: string, password: string, name: string): Promise<boolean> => {
+    setIsLoading(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Check if user already exists
+      const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+      const existingUser = storedUsers.find((u: any) => u.email === email);
+      
+      if (existingUser) {
+        return false; // User already exists
+      }
+      
+      const newUser = {
         id: Date.now().toString(),
         email,
         phone,
-        name: email.split('@')[0], // Extract name from email for demo
+        name,
+        password, // In real app, this would be hashed
       };
       
-      setUser(newUser);
-      localStorage.setItem('user', JSON.stringify(newUser));
+      // Store in localStorage
+      storedUsers.push(newUser);
+      localStorage.setItem('users', JSON.stringify(storedUsers));
+      
+      const { password: _, ...userWithoutPassword } = newUser;
+      setUser(userWithoutPassword);
+      localStorage.setItem('user', JSON.stringify(userWithoutPassword));
       return true;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const forgotPassword = async (email: string): Promise<boolean> => {
+    setIsLoading(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Check if user exists
+      const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+      const foundUser = storedUsers.find((u: any) => u.email === email);
+      
+      return !!foundUser; // Return true if user exists
     } finally {
       setIsLoading(false);
     }
@@ -123,7 +176,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider value={{ 
       user, 
       teams, 
-      signIn, 
+      signIn,
+      register,
+      forgotPassword,
       logout, 
       createTeam, 
       updateTeam, 
